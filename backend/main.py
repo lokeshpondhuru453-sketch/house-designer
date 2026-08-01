@@ -1,21 +1,32 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from llm_parser import parse_text_to_json
+from layout_generator import generate_layout
+from mesh_builder import blueprint_to_mesh
+from validator import validate_requirements
+from schemas import Requirements
+import os
 
 app = FastAPI(
     title="AI House Designer API",
-    version="1.0.0",
+    version="1.0.0"
 )
+
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://house-designer-tau.vercel.app",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://house-designer-tau.vercel.app",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+API_KEY = None
 from pydantic import BaseModel
 from llm_parser import parse_text_to_json
 from layout_generator import generate_layout
