@@ -1,3 +1,12 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    raise ValueError("GEMINI_API_KEY environment variable is not set.")
 import os
 import json
 from google import genai
@@ -36,7 +45,7 @@ Format:
 
 def parse_text_to_json(text: str) -> dict:
     response = client.models.generate_content(
-        model="gemini-3.5-flash",
+        model="gemini-2.5-flash",
         contents=f"{PROMPT}\n\nUser request:\n{text}"
     )
 

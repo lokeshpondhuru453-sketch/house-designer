@@ -10,12 +10,12 @@ services:
       - API_KEY=house-designer-secret
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-    depends_on:
-      - backend
+  build:
+    context: ./frontend
+    dockerfile: Dockerfile
+  ports:
+    - "3000:3000"
+  environment:
+    - NEXT_PUBLIC_API_URL=https://house-designer-hroi.onrender.com
+  depends_on:
+    - backend

@@ -7,6 +7,18 @@ from mesh_builder import blueprint_to_mesh
 from validator import validate_requirements
 from schemas import Requirements
 import os
+from google.genai.errors import ClientError
+
+@app.post("/generate")
+def generate(payload: PromptIn):
+    try:
+        req_dict = parse_text_to_json(payload.prompt)
+        ...
+    except ClientError as e:
+        return {
+            "error": "Gemini API quota exceeded",
+            "details": str(e)
+        }
 
 app = FastAPI(
     title="AI House Designer API",
@@ -17,13 +29,13 @@ API_KEY = None
 
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://house-designer-tau.vercel.app",
+    "https://house-designer-7ug3.vercel.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -43,8 +55,17 @@ class PromptIn(BaseModel):
 
 @app.post("/generate")
 def generate(payload: PromptIn):
+
     req_dict = parse_text_to_json(payload.prompt)
+
+    if "adjacency" in req_dict:
+        req_dict["adjacency"] = [
+            {"a": pair[0], "b": pair[1]}
+            for pair in req_dict["adjacency"]
+        ]
+
     req = Requirements(**req_dict)
+
     val = validate_requirements(req)
 
     if not val["valid"]:
