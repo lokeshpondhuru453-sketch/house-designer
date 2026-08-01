@@ -6,19 +6,8 @@ from layout_generator import generate_layout
 from mesh_builder import blueprint_to_mesh
 from validator import validate_requirements
 from schemas import Requirements
-import os
 from google.genai.errors import ClientError
-
-@app.post("/generate")
-def generate(payload: PromptIn):
-    try:
-        req_dict = parse_text_to_json(payload.prompt)
-        ...
-    except ClientError as e:
-        return {
-            "error": "Gemini API quota exceeded",
-            "details": str(e)
-        }
+import os
 
 app = FastAPI(
     title="AI House Designer API",
@@ -55,26 +44,37 @@ class PromptIn(BaseModel):
 
 @app.post("/generate")
 def generate(payload: PromptIn):
+    try:
+        req_dict = parse_text_to_json(payload.prompt)
 
-    req_dict = parse_text_to_json(payload.prompt)
+        if "adjacency" in req_dict:
+            req_dict["adjacency"] = [
+                {"a": pair[0], "b": pair[1]}
+                for pair in req_dict["adjacency"]
+            ]
 
-    if "adjacency" in req_dict:
-        req_dict["adjacency"] = [
-            {"a": pair[0], "b": pair[1]}
-            for pair in req_dict["adjacency"]
-        ]
+        req = Requirements(**req_dict)
 
-    req = Requirements(**req_dict)
+        val = validate_requirements(req)
 
-    val = validate_requirements(req)
+        if not val["valid"]:
+            return {
+                "error": "Invalid requirements",
+                "details": val["errors"]
+            }
 
-    if not val["valid"]:
+        layout = generate_layout(req_dict)
+        mesh = blueprint_to_mesh(layout)
+
+        return mesh
+
+    except ClientError as e:
         return {
-            "error": "Invalid requirements",
-            "details": val["errors"]
+            "error": "Gemini API quota exceeded",
+            "details": str(e)
         }
 
-    layout = generate_layout(req_dict)
-    mesh = blueprint_to_mesh(layout)
-
-    return mesh
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
