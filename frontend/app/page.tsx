@@ -28,35 +28,39 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   async function handleGenerate() {
-    setLoading(true);
-    setError(null);
-    setMesh(null);
+  setLoading(true);
+  setError(null);
+  setMesh(null);
 
-    try {
-      const res = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/generate`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": "house-designer-secret",
-    },
-    body: JSON.stringify({ prompt }),
-  }
-);
+  try {
+    const API_URL =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://house-designer-hroi.onrender.com";
 
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setError(data.details?.join(" ") || "Failed to generate layout");
-      } else {
-        setMesh(data);
-      }
-    } catch (e) {
-      setError("Network error");
-    } finally {
-      setLoading(false);
+    const res = await fetch(`${API_URL}/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Remove this line if you disabled API key verification
+        // "x-api-key": "house-designer-secret",
+      },
+      body: JSON.stringify({ prompt }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      setError(data.details?.join(" ") || data.error || "Failed to generate layout");
+    } else {
+      setMesh(data);
     }
+  } catch (e) {
+    console.error(e);
+    setError("Network error");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div className="container">
