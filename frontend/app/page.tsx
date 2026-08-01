@@ -36,6 +36,7 @@ export default function Home() {
     const API_URL =
       process.env.NEXT_PUBLIC_API_URL ||
       "https://house-designer-hroi.onrender.com";
+      console.log("API_URL =", API_URL);
 
     const res = await fetch(`${API_URL}/generate`, {
       method: "POST",
