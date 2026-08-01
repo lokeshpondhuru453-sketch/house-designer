@@ -26,7 +26,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-API_KEY = os.getenv("API_KEY")
+API_KEY = None
 
 def verify_api_key(x_api_key: str | None = Header(None)):
     if not API_KEY:
@@ -41,7 +41,7 @@ def verify_api_key(x_api_key: str | None = Header(None)):
 class PromptIn(BaseModel):
     prompt: str
 
-@app.post("/generate", dependencies=[Depends(verify_api_key)])
+@app.post("/generate")
 def generate(payload: PromptIn):
     req_dict = parse_text_to_json(payload.prompt)
     req = Requirements(**req_dict)
