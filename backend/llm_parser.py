@@ -52,9 +52,9 @@ Format:
 
 def parse_text_to_json(text: str) -> dict:
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=f"{PROMPT}\n\nUser request:\n{text}"
-    )
+    model="gemini-flash-latest",
+    contents=f"{PROMPT}\n\nUser request:\n{text}"
+)
 
     content = response.text.strip()
 
