@@ -1,5 +1,7 @@
 from dotenv import load_dotenv
 import os
+import json
+from google import genai
 
 load_dotenv()
 
@@ -7,16 +9,21 @@ api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     raise ValueError("GEMINI_API_KEY environment variable is not set.")
-import os
-import json
-from google import genai
-
-api_key = os.getenv("GEMINI_API_KEY")
-
-if not api_key:
-    raise ValueError("GEMINI_API_KEY environment variable is not set.")
 
 client = genai.Client(api_key=api_key)
+
+# ===========================
+# TEMPORARY DEBUG CODE
+# ===========================
+print("========== AVAILABLE GEMINI MODELS ==========")
+
+try:
+    for model in client.models.list():
+        print(model.name)
+except Exception as e:
+    print("Failed to list models:", e)
+
+print("============================================")
 
 PROMPT = """
 You are an AI architect.
@@ -45,7 +52,7 @@ Format:
 
 def parse_text_to_json(text: str) -> dict:
     response = client.models.generate_content(
-      model="gemini-2.5-flash-pro",
+        model="gemini-2.5-flash",
         contents=f"{PROMPT}\n\nUser request:\n{text}"
     )
 
