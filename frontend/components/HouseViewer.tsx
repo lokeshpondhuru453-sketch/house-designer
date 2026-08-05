@@ -161,19 +161,9 @@ function WallPiece({
 
   return (
     <mesh
-      position={[
-        centerX,
-        centerY,
-        centerZ,
-      ]}
-      rotation={[
-        0,
-        -angle,
-        0,
-      ]}
-      castShadow
-      receiveShadow
-    >
+  position={[centerX, centerY, centerZ]}
+  rotation={[0, -angle, 0]}
+>
       <boxGeometry
         args={[
           pieceLength,
@@ -182,9 +172,7 @@ function WallPiece({
         ]}
       />
 
-      <meshStandardMaterial
-        color="#dddddd"
-      />
+      <meshStandardMaterial color="white" />
     </mesh>
   );
 }
@@ -424,6 +412,35 @@ function CanonicalWall3D({
    HOUSE
    ========================================================= */
 
+function Floor() {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[60, 60]} />
+      <meshStandardMaterial color="#f5f5f5" />
+    </mesh>
+  );
+}
+function getHouseCenter(rooms: Room[]) {
+  let minX = Infinity;
+  let minZ = Infinity;
+  let maxX = -Infinity;
+  let maxZ = -Infinity;
+
+  rooms.forEach((room) => {
+    room.polygon.forEach(([x, z]) => {
+      minX = Math.min(minX, x);
+      minZ = Math.min(minZ, z);
+
+      maxX = Math.max(maxX, x);
+      maxZ = Math.max(maxZ, z);
+    });
+  });
+
+  return {
+    centerX: (minX + maxX) / 2,
+    centerZ: (minZ + maxZ) / 2,
+  };
+}
 function House3D({
   rooms,
   thickness,
@@ -431,32 +448,28 @@ function House3D({
   rooms: Room[];
   thickness: number;
 }) {
-  const canonicalWalls =
-    buildCanonicalWalls(
-      rooms,
-      false
-    );
-    
-  return (
-    <group>
-      {canonicalWalls.map(
-        (wall, index) => (
-          <CanonicalWall3D
-            key={`wall-${index}`}
-            wall={wall}
-            thickness={thickness}
-          />
-        )
-      )}
+  const canonicalWalls = buildCanonicalWalls(
+    rooms,
+    false
+  );
+  const { centerX, centerZ } = getHouseCenter(rooms);
 
-      {rooms.map(
-        (room, index) => (
-          <RoomLabel
-            key={`label-${room.name}-${index}`}
-            room={room}
-          />
-        )
-      )}
+  return (
+    <group position={[-centerX, 0, -centerZ]}>
+      {canonicalWalls.map((wall, index) => (
+        <CanonicalWall3D
+          key={`wall-${index}`}
+          wall={wall}
+          thickness={thickness}
+        />
+      ))}
+
+      {rooms.map((room, index) => (
+        <RoomLabel
+          key={`label-${room.name}-${index}`}
+          room={room}
+        />
+      ))}
     </group>
   );
 }
@@ -471,59 +484,50 @@ export default function HouseViewer({
   mesh: MeshData;
 }) {
   return (
-    <Canvas
-      shadows
-      camera={{
-        position: [
-          18,
-          16,
-          18,
-        ],
-        fov: 45,
-      }}
-    >
+  <Canvas
+  camera={{
+    position: [0,20,20],
+    fov: 45,
+  }}
+>
       {/* LIGHTING */}
 
-      <ambientLight
-        intensity={0.7}
-      />
+<ambientLight intensity={0.9} />
 
-      <directionalLight
-        position={[
-          10,
-          20,
-          10,
-        ]}
-        intensity={1.2}
-        castShadow
-      />
+<directionalLight
+  position={[10, 20, 10]}
+  intensity={0.8}
+/>
 
       {/* GRID */}
 
-      <Grid
-        position={[0, 0, 0]}
-        args={[40, 40]}
-        cellColor="#334155"
-        sectionColor="#475569"
-      />
+      {/* FLOOR */}
 
-      {/* HOUSE */}
+<Floor />
 
-      <House3D
-        rooms={mesh.rooms}
-        thickness={
-          mesh.wall_thickness ||
-          0.15
-        }
-      />
+{/* GRID */}
+
+<Grid
+    args={[50,50]}
+    cellSize={1}
+    sectionSize={5}
+    fadeDistance={100}
+/>
+
+{/* HOUSE */}
+
+<House3D
+  rooms={mesh.rooms}
+  thickness={mesh.wall_thickness || 0.15}
+/>
 
       {/* CAMERA */}
 
       <OrbitControls
-        makeDefault
-        enableDamping
-        dampingFactor={0.05}
-      />
+  makeDefault
+  target={[0, 0, 0]}
+  enableDamping
+/>
     </Canvas>
   );
 }

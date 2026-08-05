@@ -19,6 +19,7 @@ API_KEY = None
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://house-designer-7ug3.vercel.app",
+    "https://house-designer-tau.vercel.app",
 ]
 
 app.add_middleware(
